@@ -64,10 +64,10 @@ def pprint(json_data):
 
 def create_spark_room(room_name):
     """
-    Action:     this function will create a Spark room with the title room name
-    Call to:    Spark - /rooms
-    Input:      the room name, global variable - Spark auth access token
-    Output:     the Spark room Id
+    This function will create a Spark room with the title room name
+    Call to Spark - /rooms
+    :param room_name: Spark room name
+    :return: Spark room Id
     """
 
     payload = {'title': room_name}
@@ -82,10 +82,10 @@ def create_spark_room(room_name):
 
 def find_spark_room_id(room_name):
     """
-    Action:     this function will find the Spark room id based on the room name
-    Call to:    Spark - /rooms
-    Input:      the room name, global variable - Spark auth access token
-    Output:     the Spark room Id
+    This function will find the Spark room id based on the room name
+    Call to Spark - /rooms
+    :param room_name: Spark room name
+    :return: the Spark room Id
     """
 
     payload = {'title': room_name}
@@ -103,10 +103,11 @@ def find_spark_room_id(room_name):
 
 def add_spark_room_membership(room_Id, email_invite):
     """
-    Action:     this function will add membership to the Spark room with the room Id
-    Call to:    Spark - /memberships
-    Input:      room Id and email address to invite, global variable - Spark auth access token
-    Output:     none
+    This function will add membership to the Spark room with the room Id
+    Call to Spark - /memberships
+    :param room_Id: Spark room Id
+    :param email_invite: email address to invite
+    :return:
     """
 
     payload = {'roomId': room_Id, 'personEmail': email_invite, 'isModerator': 'true'}
@@ -118,10 +119,10 @@ def add_spark_room_membership(room_Id, email_invite):
 
 def last_spark_room_message(room_Id):
     """
-    Action:     this function will find the last message from the Spark room with the room Id
-    Call to:    Spark - /messages
-    Input:      room Id, global variable - Spark auth access token
-    Output:     last room message and person email
+    This function will find the last message from the Spark room with the room Id
+    Call to Spark - /messages
+    :param room_Id: Spark room Id
+    :return: last message and person email in the room
     """
 
     url = SPARK_URL + '/messages?roomId=' + room_Id
@@ -138,10 +139,11 @@ def last_spark_room_message(room_Id):
 
 def post_spark_room_message(room_id, message):
     """
-    Action:     this function will post a message to the Spark room with the room Id
-    Call to:    Spark - /messages
-    Input:      room Id and the message, global variable - Spark auth access token
-    Output:     none
+    This function will post a message to the Spark room with the room Id
+    Call to Spark - /messages
+    :param room_id: Spark room Id
+    :param message: message
+    :return:
     """
 
     payload = {'roomId': room_id, 'text': message}
@@ -153,10 +155,10 @@ def post_spark_room_message(room_id, message):
 
 def delete_spark_room(room_id):
     """
-    Action:     this function will delete the Spark room with the room Id
-    Call to:    Spark - /rooms
-    Input:      room Id, global variable - Spark auth access token
-    Output:     none
+    This function will delete the Spark room with the room Id
+    Call to Spark - /rooms
+    :param room_id: Spark room Id
+    :return:
     """
 
     url = SPARK_URL + '/rooms/' + room_id

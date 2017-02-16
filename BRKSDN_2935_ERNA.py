@@ -33,6 +33,7 @@ CMX_PASSW = 'Clive!17'
 CMX_AUTH = HTTPBasicAuth(CMX_USER, CMX_PASSW)
 
 SPARK_URL = 'https://api.ciscospark.com/v1'
+ROOM_NAME = 'ERNA'
 
 ASAv_URL = 'https://172.16.11.5'
 ASAv_USER = 'python'
@@ -48,3 +49,439 @@ UCSD_PASSW = 'cisco.123'
 UCSD_KEY = '1D3FD49A0D474481AE7A4C6BD33EC82E'
 UCSD_CONNECT_FLOW = 'Gabi_VM_Connect_VLAN_10'
 UCSD_DISCONNECT_FLOW = 'Gabi_VM_Disconnect_VLAN_10'
+
+
+
+def pprint(json_data):
+    """
+    Pretty print JSON formatted data
+    :param json_data:
+    :return:
+    """
+
+    print(json.dumps(json_data, indent=4, separators=(' , ', ' : ')))
+
+def create_spark_room(room_name):
+    """
+    Action:     this function will create a Spark room with the title room name
+    Call to:    Spark - /rooms
+    Input:      the room name, global variable - Spark auth access token
+    Output:     the Spark room Id
+    """
+
+    payload = {'title': room_name}
+    url = SPARK_URL + '/rooms'
+    header = {'content-type': 'application/json', 'authorization': SPARK_AUTH}
+    room_response = requests.post(url, data=json.dumps(payload), headers=header, verify=False)
+    room_json = room_response.json()
+    room_number = room_json['id']
+    print('Created Room with the name :  ', ROOM_NAME)
+    return room_number
+
+
+def find_spark_room_id(room_name):
+    """
+    Action:     this function will find the Spark room id based on the room name
+    Call to:    Spark - /rooms
+    Input:      the room name, global variable - Spark auth access token
+    Output:     the Spark room Id
+    """
+
+    payload = {'title': room_name}
+    room_number = None
+    url = SPARK_URL + '/rooms'
+    header = {'content-type': 'application/json', 'authorization': SPARK_AUTH}
+    room_response = requests.get(url, data=json.dumps(payload), headers=header, verify=False)
+    room_list_json = room_response.json()
+    room_list = room_list_json['items']
+    for rooms in room_list:
+        if rooms['title'] == room_name:
+            room_number = rooms['id']
+    return room_number
+
+
+def add_spark_room_membership(room_Id, email_invite):
+    """
+    Action:     this function will add membership to the Spark room with the room Id
+    Call to:    Spark - /memberships
+    Input:      room Id and email address to invite, global variable - Spark auth access token
+    Output:     none
+    """
+
+    payload = {'roomId': room_Id, 'personEmail': email_invite, 'isModerator': 'true'}
+    url = SPARK_URL + '/memberships'
+    header = {'content-type': 'application/json', 'authorization': SPARK_AUTH}
+    requests.post(url, data=json.dumps(payload), headers=header, verify=False)
+    print("Invitation sent to :  ", email_invite)
+
+
+def last_spark_room_message(room_Id):
+    """
+    Action:     this function will find the last message from the Spark room with the room Id
+    Call to:    Spark - /messages
+    Input:      room Id, global variable - Spark auth access token
+    Output:     last room message and person email
+    """
+
+    url = SPARK_URL + '/messages?roomId=' + room_Id
+    header = {'content-type': 'application/json', 'authorization': SPARK_AUTH}
+    response = requests.get(url, headers=header, verify=False)
+    list_messages_json = response.json()
+    list_messages = list_messages_json['items']
+    last_message = list_messages[0]['text']
+    last_person_email = list_messages[0]['personEmail']
+    print('Last room message :  ', last_message)
+    print('Last Person Email', last_person_email)
+    return [last_message, last_person_email]
+
+
+def post_spark_room_message(room_id, message):
+    """
+    Action:     this function will post a message to the Spark room with the room Id
+    Call to:    Spark - /messages
+    Input:      room Id and the message, global variable - Spark auth access token
+    Output:     none
+    """
+
+    payload = {'roomId': room_id, 'text': message}
+    url = SPARK_URL + '/messages'
+    header = {'content-type': 'application/json', 'authorization': SPARK_AUTH}
+    requests.post(url, data=json.dumps(payload), headers=header, verify=False)
+    print("Message posted :  ", message)
+
+
+def delete_spark_room(room_id):
+    """
+    Action:     this function will delete the Spark room with the room Id
+    Call to:    Spark - /rooms
+    Input:      room Id, global variable - Spark auth access token
+    Output:     none
+    """
+
+    url = SPARK_URL + '/rooms/' + room_id
+    header = {'content-type': 'application/json', 'authorization': SPARK_AUTH}
+    requests.delete(url, headers=header, verify=False)
+    print("Deleted Spark Room :  ", ROOM_NAME)
+
+
+def get_UCSD_api_Key():
+    """
+    Create a UCSD user api key for authentication of the UCSD API's requests
+    Call to UCSD, /app/api/rest?formatType=json&opName=getRESTKey&user=
+    :return: the UCSD user API Key
+    """
+
+    url = UCSD_URL + '/app/api/rest?formatType=json&opName=getRESTKey&user=' + UCSD_USER + '&password=' + UCSD_PASSW
+    header = {'content-type': 'application/json', 'accept-type': 'application/json'}
+    UCSD_api_key_json = requests.get(url, headers=header, verify=False)
+    UCSD_api_key = UCSD_api_key_json.json()
+    print ('api key: ', UCSD_api_key)
+    return UCSD_api_key
+
+
+def execute_UCSD_workflow(UCSD_key, workflow_name):
+    """
+    Execute an UCSD workflow
+    Call to UCSD, /app/api/rest?formatType=json&opName=userAPISubmitWorkflowServiceRequest&opData=
+    :param UCSD_key: UCSD user API key
+    :param workflow_name: workflow name, parameters if needed
+    :return:
+    """
+    url = UCSD_URL + '/app/api/rest?formatType=json&opName=userAPISubmitWorkflowServiceRequest&opData={param0:"' + workflow_name + '", param1: {}, param2:-1}'
+    print ('url: ', url)
+    header = {'content-type': 'application/json', 'accept-type': 'application/json', "X-Cloupia-Request-Key": UCSD_key}
+    response = requests.post(url=url, headers=header, verify=False)
+    print(response.text)
+
+
+
+
+def get_Service_Ticket():
+    """
+    create the authorization ticket required to access APIC-EM
+    Call to APIC-EM - /ticket
+    :return: ticket
+    """
+
+    ticket = None
+    payload = {'username': EM_USER, 'password': EM_PASSW}
+    url = EM_URL + '/ticket'
+    header = {'content-type': 'application/json'}
+    ticket_response = requests.post(url, data=json.dumps(payload), headers=header, verify=False)
+    if not ticket_response:
+        print('No data returned!')
+    else:
+        ticket_json = ticket_response.json()
+        ticket = ticket_json['response']['serviceTicket']
+        print('APIC-EM ticket: ', ticket)
+        return ticket
+
+
+def locate_Client_EM(client_IP,ticket):
+
+    """
+    Action:     Locate a wired client device in the infrastructure by using the client IP address
+    Call to:    APIC-EM - /host
+    Input:      Client IP Address, APIC-EM ticket
+    Output:     device hostname, interface_name
+    """
+
+    interface_name = None
+    hostname = None
+    host_info = None
+    vlan_Id = None
+    url = EM_URL + '/host'
+    header = {'accept': 'application/json', 'X-Auth-Token': ticket}
+    payload = {'hostIp': client_IP}
+    host_response = requests.get(url, params=payload, headers=header, verify=False)
+    host_json = host_response.json()
+    if host_json['response'] == []:
+        print('The IP address ', client_IP, ' is not used by any client devices')
+    else:
+        host_info = host_json['response'][0]
+        host_type = host_info['hostType']
+        interface_name = host_info['connectedInterfaceName']
+        device_id = host_info['connectedNetworkDeviceId']
+        vlan_Id = host_info['vlanId']
+        hostname = get_Hostname_Id(device_id, ticket)[0]
+        print('The IP address ', client_IP, ' is connected to the network device ', hostname, ',  interface ', interface_name)
+    return hostname, interface_name, vlan_Id
+
+
+
+def get_Hostname_Id(device_id, ticket):
+
+    """
+    Action:     find out the hostname of the network device with the specified device ID
+    Call to:    APIC-EM - network-device/{id}
+    Input:      device Id, APIC-EM ticket
+    Output:     hostname and the device type of the network device
+    """
+
+    hostname = None
+    url = EM_URL + '/network-device/' + device_id
+    header = {'accept': 'application/json', 'X-Auth-Token': ticket}
+    hostname_response = requests.get(url, headers=header, verify=False)
+    hostname_json = hostname_response.json()
+    hostname = hostname_json['response']['hostname']
+    devicetype =  hostname_json['response']['type']
+    return hostname, devicetype
+
+
+
+def PI_get_Device_Id(device_name):
+
+    """
+    Action:     find out the PI device Id using the device hostname
+    Call to:    Prime Infrastructure - /webacs/api/v1/data/Devices, filtered using the Device Hostname
+    Input:      device hostname
+    Output:     PI device Id
+    """
+
+    url = PI_URL + '/webacs/api/v1/data/Devices?deviceName=' + device_name
+    header = {'content-type': 'application/json', 'accept': 'application/json'}
+    response = requests.get(url, headers=header, verify=False, auth=PI_AUTH)
+    device_id_json = response.json()
+    device_id = device_id_json['queryResponse']['entityId'][0]['$']
+    return  device_id
+
+
+
+def PI_Deploy_CLI_template(device_id,template_name,variable_value):
+
+    """
+    Action:     deploy a template to a device through Job
+    Call to:    Prime Infrastructure - /webacs/api/v1/op/cliTemplateConfiguration/deployTemplateThroughJob
+    Input:      device Prime Infrastructure id, template name, variables to send to template in JSON format
+    Output:     job number
+    """
+
+    param = {
+        'cliTemplateCommand': {
+            'targetDevices': {
+                'targetDevice': {
+                    'targetDeviceID': str(device_id),
+                    'variableValues' : {
+                        'variableValue' : variable_value
+                    }
+                }
+            },
+            'templateName': template_name
+        }
+    }
+    url = PI_URL + '/webacs/api/v1/op/cliTemplateConfiguration/deployTemplateThroughJob'
+    header = {'content-type': 'application/json', 'accept': 'application/json'}
+    response = requests.put(url, data=json.dumps(param), headers=header, verify=False, auth=PI_AUTH)
+    job_json = response.json()
+    job_name = job_json['mgmtResponse']['cliTemplateCommandJobResult']['jobName']
+    print ('job name: ', job_name)
+    return job_name
+
+
+def get_Job_Status(job_name):
+
+    """
+    Action:     get job status in PI
+    Call to:    Prime Infrastructure - /webacs/api/v1/data/JobSummary, filtered by the job name, will provide the job id
+                A second call to /webacs/api/v1/data/JobSummary using the job id
+    Input:      Prime Infrastructure job name
+    Output:     job status
+    """
+
+    #  find out the PI job id using the job name
+
+    url = PI_URL + '/webacs/api/v1/data/JobSummary?jobName=' + job_name
+    header = {'content-type': 'application/json', 'accept': 'application/json'}
+    response = requests.get(url, headers=header, verify=False, auth=PI_AUTH)
+    job_id_json = response.json()
+    job_id =job_id_json['queryResponse']['entityId'][0]['$']
+
+    #  find out the job status using the job id
+
+    url = PI_URL + '/webacs/api/v1/data/JobSummary/' + job_id
+    header = {'content-type': 'application/json', 'accept': 'application/json'}
+    response = requests.get(url, headers=header, verify=False, auth=PI_AUTH)
+    job_status_json = response.json()
+    #  print(json.dumps(job_status_json, indent=4, separators=(' , ', ' : ')))
+    job_status = job_status_json['queryResponse']['entity'][0]['jobSummaryDTO']['resultStatus']
+    return job_status
+
+
+
+def get_ASAv_access_list(interface_name):
+
+    """
+    Action:     find out the existing ASAv interface Access Control List
+    Call to:    ASAv - /api/access/in/{interfaceId}/rules
+    Input:      interface_name
+    Output:     Access Control List id number
+    """
+
+    url = ASAv_URL + '/api/access/in/' + interface_name + '/rules'
+    header = {'content-type': 'application/json', 'accept-type': 'application/json'}
+    response = requests.get(url, headers=header, verify=False, auth=ASAv_AUTH)
+    acl_json = response.json()
+    # print(json.dumps(response.json(), indent=4, separators=(' , ', ' : ')))
+    acl_id_number = acl_json['items'][0]['objectId']
+    return acl_id_number
+
+
+def create_ASAv_access_list(acl_id, interface_name, client_IP):
+
+    """
+    Action:     insert in line 1 a new ACL entry to existing interface ACL
+    Call to:    ASAv - /api/access/in/{interfaceId}/rules, post method
+    Input:      ACL id number, interface_name, client IP
+    Output:     Response Code - 201 if successful
+    """
+
+    url = ASAv_URL + '/api/access/in/' + interface_name  + '/rules/' + str(acl_id)
+    header = {'content-type': 'application/json', 'accept-type':'application/json'}
+
+    post_data = {
+        'sourceAddress': {
+            'kind': 'IPv4Address',
+            'value': ASAv_REMOTE_CLIENT
+        },
+        'destinationAddress': {
+            'kind': 'IPv4Address',
+            'value': client_IP
+        },
+        'sourceService': {
+            'kind': 'NetworkProtocol',
+            'value': 'ip'
+        },
+        'destinationService': {
+            'kind': 'NetworkProtocol',
+            'value': 'ip'
+        },
+        'permit': True,
+        'active': True,
+        'ruleLogging': {
+            'logStatus': 'Informational',
+            'logInterval': 300
+        },
+        'position': 1,
+        'isAccessRule': True
+    }
+    response = requests.post(url, json.dumps(post_data), headers=header, verify=False, auth=ASAv_AUTH)
+    return(response.status_code)
+
+
+def delete_ASAv_access_list(acl_id, interface_name):
+
+    """
+    Action:     delete ACL entry line 1 to existing interface ACL
+    Call to:    ASAv - /api/access/in/{interfaceId}/rules, delete method
+    Input:      ACL id number, interface_name
+    Output:     Response Code - None if successful
+    """
+
+    url = ASAv_URL + '/api/access/in/' + interface_name + '/rules/'+str(acl_id)
+    header = {'content-type': 'application/json', 'accept-type': 'application/json'}
+    response = requests.delete(url, headers=header, verify=False, auth=ASAv_AUTH)
+
+
+
+
+
+def main():
+    """
+    Vendor will join Spark Room with the name {ROOM_NAME}
+    It will ask for access to an IP-enabled device - named {IPD}
+    The code will map this IP-enabled device to the IP address {172.16.41.55}
+    Access will be provisioned to allow connectivity from DMZ VDI to IPD
+    """
+
+    # verify if Spark Room exists, if not create Spark Room, and add membership (optional)
+
+    spark_room_id = find_spark_room_id(ROOM_NAME)
+    if spark_room_id is None:
+        spark_room_id = create_spark_room(ROOM_NAME)
+        # add_spark_room_membership(spark_room_id, IT_ENG_EMAIL)
+        print('- ', ROOM_NAME, ' -  Spark room created')
+        post_spark_room_message(spark_room_id, 'To require access enter :  IPD')
+        post_spark_room_message(spark_room_id, 'Ready for input!')
+        print('Instructions posted in the room')
+    else:
+        print('- ', ROOM_NAME, ' -  Existing Spark room found')
+        post_spark_room_message(spark_room_id, 'To require access enter :  IPD')
+        post_spark_room_message(spark_room_id, 'Ready for input!')
+    print('- ', ROOM_NAME, ' -  Spark room id: ', spark_room_id)
+
+    # check for messages to identify the last message posted and the user's email who posted the message
+    # check for the length of time required for access
+
+    last_message = last_spark_room_message(spark_room_id)[0]
+
+    while last_message == 'Ready for input!':
+        time.sleep(5)
+        last_message = last_spark_room_message(spark_room_id)[0]
+        if last_message == 'IPD':
+            last_person_email = last_spark_room_message(spark_room_id)[1]
+            post_spark_room_message(spark_room_id, 'How long time do you need access for? (in minutes)  : ')
+            time.sleep(10)
+            if last_spark_room_message(spark_room_id)[0] == 'How long time do you need access for? (in minutes)  : ':
+                timer = 30 * 60
+            else:
+                timer = int(last_spark_room_message(spark_room_id)[0]) * 60
+        elif last_message != 'Ready for input!':
+            post_spark_room_message(spark_room_id, 'I do not understand you')
+            post_spark_room_message(spark_room_id, 'To require access enter :  IPD')
+            post_spark_room_message(spark_room_id, 'Ready for input!')
+            last_message = 'Ready for input!'
+
+    # get UCSD API key
+
+    UCSD_key = get_UCSD_api_Key()
+
+    # execute UCSD workflow to connect VDI to VLAN, power on VDI
+    execute_UCSD_workflow(UCSD_key, UCSD_CONNECT_FLOW)
+
+
+
+
+if __name__ == '__main__':
+    main()
+
+

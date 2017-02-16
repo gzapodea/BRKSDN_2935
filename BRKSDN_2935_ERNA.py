@@ -324,6 +324,7 @@ def get_job_status(job_name):
     :param job_name: Prime Infrastructure job name
     :return: PI job status
     """
+
     #  find out the PI job id using the job name
 
     url = PI_URL + '/webacs/api/v1/data/JobSummary?jobName=' + job_name

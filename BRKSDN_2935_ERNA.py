@@ -61,6 +61,7 @@ def pprint(json_data):
 
     print(json.dumps(json_data, indent=4, separators=(' , ', ' : ')))
 
+
 def create_spark_room(room_name):
     """
     Action:     this function will create a Spark room with the title room name
@@ -194,8 +195,6 @@ def execute_UCSD_workflow(UCSD_key, workflow_name):
     print(response.text)
 
 
-
-
 def get_Service_Ticket():
     """
     create the authorization ticket required to access APIC-EM
@@ -218,12 +217,12 @@ def get_Service_Ticket():
 
 
 def locate_Client_EM(client_IP,ticket):
-
     """
-    Action:     Locate a wired client device in the infrastructure by using the client IP address
-    Call to:    APIC-EM - /host
-    Input:      Client IP Address, APIC-EM ticket
-    Output:     device hostname, interface_name
+    Locate a wired client device in the infrastructure by using the client IP address
+    Call to APIC-EM - /host
+    :param client_IP: Client IP Address
+    :param ticket: APIC-EM ticket
+    :return: hostname, interface_name, vlan_Id
     """
 
     interface_name = None
@@ -248,14 +247,13 @@ def locate_Client_EM(client_IP,ticket):
     return hostname, interface_name, vlan_Id
 
 
-
 def get_Hostname_Id(device_id, ticket):
-
     """
-    Action:     find out the hostname of the network device with the specified device ID
-    Call to:    APIC-EM - network-device/{id}
-    Input:      device Id, APIC-EM ticket
-    Output:     hostname and the device type of the network device
+    Find out the hostname of the network device with the specified device ID
+    Call to APIC-EM - network-device/{id}
+    :param device_id: APIC-EM device Id
+    :param ticket: APIC-EM ticket
+    :return: hostname and the device type of the network device
     """
 
     hostname = None
@@ -268,14 +266,12 @@ def get_Hostname_Id(device_id, ticket):
     return hostname, devicetype
 
 
-
 def PI_get_Device_Id(device_name):
-
     """
-    Action:     find out the PI device Id using the device hostname
-    Call to:    Prime Infrastructure - /webacs/api/v1/data/Devices, filtered using the Device Hostname
-    Input:      device hostname
-    Output:     PI device Id
+    Find out the PI device Id using the device hostname
+    Call to Prime Infrastructure - /webacs/api/v1/data/Devices, filtered using the Device Hostname
+    :param device_name: device hostname
+    :return: PI device Id
     """
 
     url = PI_URL + '/webacs/api/v1/data/Devices?deviceName=' + device_name
@@ -286,14 +282,14 @@ def PI_get_Device_Id(device_name):
     return  device_id
 
 
-
 def PI_Deploy_CLI_template(device_id,template_name,variable_value):
-
     """
-    Action:     deploy a template to a device through Job
-    Call to:    Prime Infrastructure - /webacs/api/v1/op/cliTemplateConfiguration/deployTemplateThroughJob
-    Input:      device Prime Infrastructure id, template name, variables to send to template in JSON format
-    Output:     job number
+    Deploy a template to a device through Job
+    Call to Prime Infrastructure - /webacs/api/v1/op/cliTemplateConfiguration/deployTemplateThroughJob
+    :param device_id: device Prime Infrastructure id
+    :param template_name: PI template name
+    :param variable_value: variables to send to template in JSON format
+    :return: PI job name
     """
 
     param = {
@@ -319,15 +315,13 @@ def PI_Deploy_CLI_template(device_id,template_name,variable_value):
 
 
 def get_Job_Status(job_name):
-
     """
-    Action:     get job status in PI
-    Call to:    Prime Infrastructure - /webacs/api/v1/data/JobSummary, filtered by the job name, will provide the job id
-                A second call to /webacs/api/v1/data/JobSummary using the job id
-    Input:      Prime Infrastructure job name
-    Output:     job status
+    Get job status in PI
+    Call to Prime Infrastructure - /webacs/api/v1/data/JobSummary, filtered by the job name, will provide the job id
+    A second call to /webacs/api/v1/data/JobSummary using the job id
+    :param job_name: Prime Infrastructure job name
+    :return: PI job status
     """
-
     #  find out the PI job id using the job name
 
     url = PI_URL + '/webacs/api/v1/data/JobSummary?jobName=' + job_name
@@ -347,14 +341,12 @@ def get_Job_Status(job_name):
     return job_status
 
 
-
 def get_ASAv_access_list(interface_name):
-
     """
-    Action:     find out the existing ASAv interface Access Control List
-    Call to:    ASAv - /api/access/in/{interfaceId}/rules
-    Input:      interface_name
-    Output:     Access Control List id number
+    Find out the existing ASAv interface Access Control List
+    Call to ASAv - /api/access/in/{interfaceId}/rules
+    :param interface_name: ASA interface_name
+    :return: Access Control List id number
     """
 
     url = ASAv_URL + '/api/access/in/' + interface_name + '/rules'
@@ -367,12 +359,13 @@ def get_ASAv_access_list(interface_name):
 
 
 def create_ASAv_access_list(acl_id, interface_name, client_IP):
-
     """
-    Action:     insert in line 1 a new ACL entry to existing interface ACL
-    Call to:    ASAv - /api/access/in/{interfaceId}/rules, post method
-    Input:      ACL id number, interface_name, client IP
-    Output:     Response Code - 201 if successful
+    Insert in line 1 a new ACL entry to existing interface ACL
+    Call to ASAv - /api/access/in/{interfaceId}/rules, post method
+    :param acl_id: ASA ACL id number
+    :param interface_name: ASA interface_name
+    :param client_IP: client IP
+    :return: Response Code - 201 if successful
     """
 
     url = ASAv_URL + '/api/access/in/' + interface_name  + '/rules/' + str(acl_id)
@@ -409,20 +402,17 @@ def create_ASAv_access_list(acl_id, interface_name, client_IP):
 
 
 def delete_ASAv_access_list(acl_id, interface_name):
-
     """
-    Action:     delete ACL entry line 1 to existing interface ACL
-    Call to:    ASAv - /api/access/in/{interfaceId}/rules, delete method
-    Input:      ACL id number, interface_name
-    Output:     Response Code - None if successful
+    Delete ACL entry line 1 to existing interface ACL
+    Call to ASAv - /api/access/in/{interfaceId}/rules, delete method
+    :param acl_id: ASA ACL id number
+    :param interface_name: ASA interface_name
+    :return: Response Code - None if successful
     """
 
     url = ASAv_URL + '/api/access/in/' + interface_name + '/rules/'+str(acl_id)
     header = {'content-type': 'application/json', 'accept-type': 'application/json'}
     response = requests.delete(url, headers=header, verify=False, auth=ASAv_AUTH)
-
-
-
 
 
 def main():
@@ -478,7 +468,95 @@ def main():
     # execute UCSD workflow to connect VDI to VLAN, power on VDI
     execute_UCSD_workflow(UCSD_key, UCSD_CONNECT_FLOW)
 
+    # client IP address - DNS lookup if available
 
+    client_IP = '172.16.41.55'
+
+    # locate IPD in the environment using APIC-EM
+
+    client_connected = locate_Client_EM(client_IP,EM_ticket)
+
+    #  deploy DC router CLI template
+
+    dc_device_hostname = 'PDX-RO'
+    PI_dc_device_id = PI_get_Device_Id(dc_device_hostname)
+    print ('Head end router: ', dc_device_hostname, ', PI Device id: ',PI_dc_device_id)
+    template_name = 'GREDConfig'
+    variable_value = None  #  the template does not require any variables
+    PI_dc_job_name = PI_Deploy_CLI_template(PI_dc_device_id, template_name, variable_value)
+
+    #  deploy remote router CLI template
+
+    remote_device_hostname = client_connected[0]
+    vlan_number = client_connected[2]
+    print('Client connected to switch: ', remote_device_hostname, ' VLAN: ', vlan_number)
+    PI_remote_device_id = PI_get_Device_Id(remote_device_hostname)
+    print ('Remote Router: ', remote_device_hostname, ', PI device Id: ', PI_remote_device_id)
+    template_name = 'GRERConfig'
+    variable_value = [
+        {'name' : 'RemoteClient', 'value' : client_IP},{'name' : 'VlanId', 'value' : str(vlan_number)}
+    ]
+    PI_remote_job_name = PI_Deploy_CLI_template(PI_remote_device_id,template_name,variable_value)
+
+    # check for job status
+
+    time.sleep(60)  #  time delay to allow PI de deploy the jobs
+    dc_job_status = get_Job_Status(PI_dc_job_name)
+    print ('DC CLI template deployment status: ', dc_job_status)
+    remote_job_status = get_Job_Status(PI_remote_job_name)
+    print ('Remote CLI template deployment status: ', remote_job_status)
+
+    #  create ASAv outside interface ACL to allow traffic
+
+    ASAv_interface = 'outside'
+    acl_id = get_ASAv_access_list(ASAv_interface)
+    create_status_code = create_ASAv_access_list(acl_id, ASAv_interface, client_IP)
+    if (create_status_code == 201):
+        print('ASAv access list created to allow traffic from ', ASAv_REMOTE_CLIENT, ' to ', client_IP)
+    else:
+        print('Error creating the ASAv access list to allow traffic from ', ASAv_REMOTE_CLIENT, ' to ', client_IP)
+
+    # timer required to maintain the ERNA enabled, user provided
+
+    time.sleep(timer)
+
+    #  restore configurations
+
+    #  restore DC router config
+
+    dc_device_hostname = 'PDX-RO'
+    PI_dc_device_id = PI_get_Device_Id(dc_device_hostname)
+    print ('Head end router: ', dc_device_hostname, ', PI Device id: ',PI_dc_device_id)
+    template_name = 'GREDDelete'
+    variable_value = None  #  the template does not require any variables
+    PI_dc_job_name = PI_Deploy_CLI_template(PI_dc_device_id, template_name, variable_value)
+
+    #  restore remote router CLI template
+
+    remote_device_hostname = client_connected[0]
+    vlan_number = client_connected[2]
+    print('Client connected to switch: ', remote_device_hostname, ' VLAN: ', vlan_number)
+    PI_remote_device_id = PI_get_Device_Id(remote_device_hostname)
+    print ('Remote Router: ', remote_device_hostname, ', PI device Id: ', PI_remote_device_id)
+    template_name = 'GRERDelete'
+    variable_value = [
+        {'name' : 'RemoteClient', 'value' : client_IP},{'name' : 'VlanId', 'value' : str(vlan_number)}
+    ]
+    PI_remote_job_name = PI_Deploy_CLI_template(PI_remote_device_id,template_name,variable_value)
+    time.sleep(60)  #  time delay to allow PI de deploy the jobs
+    dc_job_status = get_Job_Status(PI_dc_job_name)
+    print ('DC router restore configurations status: ', dc_job_status)
+    remote_job_status = get_Job_Status(PI_remote_job_name)
+    print ('Remote router restore configurations status: ', remote_job_status)
+
+    # delete ASAv line 1 ACL created to allow traffic
+
+    acl_id2 = get_ASAv_access_list(ASAv_interface)
+    delete_status_code = delete_ASAv_access_list(acl_id2,ASAv_interface)
+    if (delete_status_code == None):
+        print ('ASAv access list allowing traffic from ', ASAv_REMOTE_CLIENT, ' to ', client_IP, ' deleted')
+    else:
+        print ('Error deleting the ASAv access list allowing traffic from ', ASAv_REMOTE_CLIENT, ' to ', client_IP)
 
 
 if __name__ == '__main__':

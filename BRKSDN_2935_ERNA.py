@@ -202,7 +202,6 @@ def get_service_ticket():
     :return: ticket
     """
 
-    ticket = None
     payload = {'username': EM_USER, 'password': EM_PASSW}
     url = EM_URL + '/ticket'
     header = {'content-type': 'application/json'}
@@ -227,7 +226,6 @@ def locate_client_apic_em(client_IP, ticket):
 
     interface_name = None
     hostname = None
-    host_info = None
     vlan_Id = None
     url = EM_URL + '/host'
     header = {'accept': 'application/json', 'X-Auth-Token': ticket}
@@ -238,7 +236,6 @@ def locate_client_apic_em(client_IP, ticket):
         print('The IP address ', client_IP, ' is not used by any client devices')
     else:
         host_info = host_json['response'][0]
-        host_type = host_info['hostType']
         interface_name = host_info['connectedInterfaceName']
         device_id = host_info['connectedNetworkDeviceId']
         vlan_Id = host_info['vlanId']
@@ -256,7 +253,6 @@ def get_hostname_id(device_id, ticket):
     :return: hostname and the device type of the network device
     """
 
-    hostname = None
     url = EM_URL + '/network-device/' + device_id
     header = {'accept': 'application/json', 'X-Auth-Token': ticket}
     hostname_response = requests.get(url, headers=header, verify=False)
@@ -399,7 +395,7 @@ def create_asav_access_list(acl_id, interface_name, client_IP):
         'isAccessRule': True
     }
     response = requests.post(url, json.dumps(post_data), headers=header, verify=False, auth=ASAv_AUTH)
-    return(response.status_code)
+    return response.status_code
 
 
 def delete_asav_access_list(acl_id, interface_name):
@@ -498,7 +494,7 @@ def main():
 
     # get the APIC-EM auth ticket
 
-    EM_ticket = get_Service_Ticket()
+    EM_ticket = get_service_ticket()
 
     # client IP address - DNS lookup if available
 
@@ -543,14 +539,14 @@ def main():
     ASAv_interface = 'outside'
     acl_id = get_asav_access_list(ASAv_interface)
     create_status_code = create_asav_access_list(acl_id, ASAv_interface, client_IP)
-    if (create_status_code == 201):
+    if create_status_code == 201:
         print('ASAv access list created to allow traffic from ', ASAv_REMOTE_CLIENT, ' to ', client_IP)
     else:
         print('Error creating the ASAv access list to allow traffic from ', ASAv_REMOTE_CLIENT, ' to ', client_IP)
 
     # Spark notification
 
-    post_spark_room_message(spark_room_id, 'Requested access to this device: ' + IPD + ' by user ' + last_person_email + 'has been granted for ' + str(int(timer / 60)) + ' minutes')
+    post_spark_room_message(spark_room_id, 'Requested access to this device: IPD, by user ' + last_person_email + 'has been granted for ' + str(int(timer / 60)) + ' minutes')
 
     # Tropo notification - voice call
 

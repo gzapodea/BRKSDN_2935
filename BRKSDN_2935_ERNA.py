@@ -11,7 +11,7 @@ import base64
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from requests.auth import HTTPBasicAuth  # for Basic Auth
 
-from ERNA_init import SPARK_AUTH
+from ERNA_init import SPARK_AUTH, TROPO_KEY
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)  # Disable insecure https warnings
 
@@ -417,6 +417,32 @@ def delete_asav_access_list(acl_id, interface_name):
     response = requests.delete(url, headers=header, verify=False, auth=ASAv_AUTH)
 
 
+def tropo_notification():
+    """
+    This function will call Tropo for to trigger a voice notification
+    The ERNA.py script is hosted by Tropo:
+    -----
+    call ("+1 XXX XXX XXXX")
+    say ("The requested access has been granted")
+    -----
+    We will send a get request to launch this script that will call a phone number.
+    Tropo voice will read the message.
+    :return:
+    """
+
+    url = 'https://api.tropo.com/1.0/sessions?action=create&token=' + TROPO_KEY
+    header = {'accept': 'application/json'}
+    response = requests.get(url, headers=header, verify=False)
+    response_json = response.json()
+    result = response_json['success']
+    if result:
+        notification = 'successful'
+    else:
+        notification = 'not successful'
+    print ('Tropo notification: ', notification)
+    return notification
+
+
 def main():
     """
     Vendor will join Spark Room with the name {ROOM_NAME}
@@ -522,11 +548,24 @@ def main():
     else:
         print('Error creating the ASAv access list to allow traffic from ', ASAv_REMOTE_CLIENT, ' to ', client_IP)
 
+    # Spark notification
+
+    post_spark_room_message(spark_room_id, 'Requested access to this device: ' + IPD + ' by user ' + last_person_email + 'has been granted for ' + str(int(timer / 60)) + ' minutes')
+
+    # Tropo notification - voice call
+
+    voice_notification_result = tropo_notification()
+    post_spark_room_message(spark_room_id, 'Tropo Voice Notification: '+ voice_notification_result)
+
+    #
     # timer required to maintain the ERNA enabled, user provided
+    #
 
     time.sleep(timer)
 
-    #  restore configurations
+    #
+    #  restore configurations to initial state
+    #
 
     #  restore DC router config
 

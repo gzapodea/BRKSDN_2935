@@ -28,7 +28,7 @@
 <font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
     
 <tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
-<td width="100%"><dl><dt><a name="-add_spark_room_membership"><strong>add_spark_room_membership</strong></a>(room_Id, email_invite)</dt><dd><tt>This&nbsp;function&nbsp;will&nbsp;add&nbsp;membership&nbsp;to&nbsp;the&nbsp;Spark&nbsp;room&nbsp;with&nbsp;the&nbsp;room&nbsp;Id<br>
+<td width="100%"><dl><dt><a name="-add_spark_room_membership"><strong>add_spark_room_membership</strong></a>(room_id, email_invite)</dt><dd><tt>This&nbsp;function&nbsp;will&nbsp;add&nbsp;membership&nbsp;to&nbsp;the&nbsp;Spark&nbsp;room&nbsp;with&nbsp;the&nbsp;room&nbsp;Id<br>
 Call&nbsp;to&nbsp;Spark&nbsp;-&nbsp;/memberships<br>
 :param&nbsp;room_Id:&nbsp;Spark&nbsp;room&nbsp;Id<br>
 :param&nbsp;email_invite:&nbsp;email&nbsp;address&nbsp;to&nbsp;invite<br>
@@ -81,7 +81,7 @@ Call&nbsp;to&nbsp;APIC-EM&nbsp;-&nbsp;/ticket<br>
  <dl><dt><a name="-get_ucsd_api_key"><strong>get_ucsd_api_key</strong></a>()</dt><dd><tt>Create&nbsp;a&nbsp;UCSD&nbsp;user&nbsp;api&nbsp;key&nbsp;for&nbsp;authentication&nbsp;of&nbsp;the&nbsp;UCSD&nbsp;API's&nbsp;requests<br>
 Call&nbsp;to&nbsp;UCSD,&nbsp;/app/api/rest?formatType=json&amp;opName=getRESTKey&amp;user=<br>
 :return:&nbsp;the&nbsp;UCSD&nbsp;user&nbsp;API&nbsp;Key</tt></dd></dl>
- <dl><dt><a name="-last_spark_room_message"><strong>last_spark_room_message</strong></a>(room_Id)</dt><dd><tt>This&nbsp;function&nbsp;will&nbsp;find&nbsp;the&nbsp;last&nbsp;message&nbsp;from&nbsp;the&nbsp;Spark&nbsp;room&nbsp;with&nbsp;the&nbsp;room&nbsp;Id<br>
+ <dl><dt><a name="-last_spark_room_message"><strong>last_spark_room_message</strong></a>(room_id)</dt><dd><tt>This&nbsp;function&nbsp;will&nbsp;find&nbsp;the&nbsp;last&nbsp;message&nbsp;from&nbsp;the&nbsp;Spark&nbsp;room&nbsp;with&nbsp;the&nbsp;room&nbsp;Id<br>
 Call&nbsp;to&nbsp;Spark&nbsp;-&nbsp;/messages<br>
 :param&nbsp;room_Id:&nbsp;Spark&nbsp;room&nbsp;Id<br>
 :return:&nbsp;last&nbsp;message&nbsp;and&nbsp;person&nbsp;email&nbsp;in&nbsp;the&nbsp;room</tt></dd></dl>
@@ -112,6 +112,15 @@ Call&nbsp;to&nbsp;Spark&nbsp;-&nbsp;/messages<br>
  <dl><dt><a name="-pprint"><strong>pprint</strong></a>(json_data)</dt><dd><tt>Pretty&nbsp;print&nbsp;JSON&nbsp;formatted&nbsp;data<br>
 :param&nbsp;json_data:<br>
 :return:</tt></dd></dl>
+ <dl><dt><a name="-tropo_notification"><strong>tropo_notification</strong></a>()</dt><dd><tt>This&nbsp;function&nbsp;will&nbsp;call&nbsp;Tropo&nbsp;for&nbsp;to&nbsp;trigger&nbsp;a&nbsp;voice&nbsp;notification<br>
+The&nbsp;ERNA.py&nbsp;script&nbsp;is&nbsp;hosted&nbsp;by&nbsp;Tropo:<br>
+-----<br>
+call&nbsp;("+1&nbsp;XXX&nbsp;XXX&nbsp;XXXX")<br>
+say&nbsp;("The&nbsp;requested&nbsp;access&nbsp;has&nbsp;been&nbsp;granted")<br>
+-----<br>
+We&nbsp;will&nbsp;send&nbsp;a&nbsp;get&nbsp;request&nbsp;to&nbsp;launch&nbsp;this&nbsp;script&nbsp;that&nbsp;will&nbsp;call&nbsp;a&nbsp;phone&nbsp;number.<br>
+Tropo&nbsp;voice&nbsp;will&nbsp;read&nbsp;the&nbsp;message.<br>
+:return:</tt></dd></dl>
 </td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#55aa55">
@@ -139,6 +148,7 @@ Call&nbsp;to&nbsp;Spark&nbsp;-&nbsp;/messages<br>
 <strong>ROOM_NAME</strong> = 'ERNA'<br>
 <strong>SPARK_AUTH</strong> = 'Bearer Put your Spark token here'<br>
 <strong>SPARK_URL</strong> = 'https://api.ciscospark.com/v1'<br>
+<strong>TROPO_KEY</strong> = 'Put your Tropo key here'<br>
 <strong>UCSD_CONNECT_FLOW</strong> = 'Gabi_VM_Connect_VLAN_10'<br>
 <strong>UCSD_DISCONNECT_FLOW</strong> = 'Gabi_VM_Disconnect_VLAN_10'<br>
 <strong>UCSD_KEY</strong> = '1D3FD49A0D474481AE7A4C6BD33EC82E'<br>
@@ -146,4 +156,3 @@ Call&nbsp;to&nbsp;Spark&nbsp;-&nbsp;/messages<br>
 <strong>UCSD_URL</strong> = 'https://https://10.94.132.69'<br>
 <strong>UCSD_USER</strong> = 'gzapodea'</td></tr></table>
 </body></html>
-

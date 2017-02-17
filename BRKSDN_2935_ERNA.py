@@ -50,7 +50,6 @@ UCSD_CONNECT_FLOW = 'Gabi_VM_Connect_VLAN_10'
 UCSD_DISCONNECT_FLOW = 'Gabi_VM_Disconnect_VLAN_10'
 
 
-
 def pprint(json_data):
     """
     Pretty print JSON formatted data
@@ -100,7 +99,7 @@ def find_spark_room_id(room_name):
     return room_number
 
 
-def add_spark_room_membership(room_Id, email_invite):
+def add_spark_room_membership(room_id, email_invite):
     """
     This function will add membership to the Spark room with the room Id
     Call to Spark - /memberships
@@ -109,14 +108,14 @@ def add_spark_room_membership(room_Id, email_invite):
     :return:
     """
 
-    payload = {'roomId': room_Id, 'personEmail': email_invite, 'isModerator': 'true'}
+    payload = {'roomId': room_id, 'personEmail': email_invite, 'isModerator': 'true'}
     url = SPARK_URL + '/memberships'
     header = {'content-type': 'application/json', 'authorization': SPARK_AUTH}
     requests.post(url, data=json.dumps(payload), headers=header, verify=False)
     print("Invitation sent to :  ", email_invite)
 
 
-def last_spark_room_message(room_Id):
+def last_spark_room_message(room_id):
     """
     This function will find the last message from the Spark room with the room Id
     Call to Spark - /messages
@@ -124,7 +123,7 @@ def last_spark_room_message(room_Id):
     :return: last message and person email in the room
     """
 
-    url = SPARK_URL + '/messages?roomId=' + room_Id
+    url = SPARK_URL + '/messages?roomId=' + room_id
     header = {'content-type': 'application/json', 'authorization': SPARK_AUTH}
     response = requests.get(url, headers=header, verify=False)
     list_messages_json = response.json()
@@ -190,7 +189,7 @@ def execute_ucsd_workflow(UCSD_key, workflow_name):
     :return:
     """
     url = UCSD_URL + '/app/api/rest?formatType=json&opName=userAPISubmitWorkflowServiceRequest&opData={param0:"' + workflow_name + '", param1: {}, param2:-1}'
-    print ('url: ', url)
+    print('url: ', url)
     header = {'content-type': 'application/json', 'accept-type': 'application/json', "X-Cloupia-Request-Key": UCSD_key}
     response = requests.post(url=url, headers=header, verify=False)
     print(response.text)
@@ -217,7 +216,7 @@ def get_service_ticket():
         return ticket
 
 
-def locate_client_apic_em(client_IP,ticket):
+def locate_client_apic_em(client_IP, ticket):
     """
     Locate a wired client device in the infrastructure by using the client IP address
     Call to APIC-EM - /host
@@ -235,7 +234,7 @@ def locate_client_apic_em(client_IP,ticket):
     payload = {'hostIp': client_IP}
     host_response = requests.get(url, params=payload, headers=header, verify=False)
     host_json = host_response.json()
-    if host_json['response'] == []:
+    if not host_json['response']:
         print('The IP address ', client_IP, ' is not used by any client devices')
     else:
         host_info = host_json['response'][0]
@@ -263,7 +262,7 @@ def get_hostname_id(device_id, ticket):
     hostname_response = requests.get(url, headers=header, verify=False)
     hostname_json = hostname_response.json()
     hostname = hostname_json['response']['hostname']
-    devicetype =  hostname_json['response']['type']
+    devicetype = hostname_json['response']['type']
     return hostname, devicetype
 
 
@@ -280,10 +279,10 @@ def pi_get_device_id(device_name):
     response = requests.get(url, headers=header, verify=False, auth=PI_AUTH)
     device_id_json = response.json()
     device_id = device_id_json['queryResponse']['entityId'][0]['$']
-    return  device_id
+    return device_id
 
 
-def pi_deploy_cli_template(device_id,template_name,variable_value):
+def pi_deploy_cli_template(device_id, template_name, variable_value):
     """
     Deploy a template to a device through Job
     Call to Prime Infrastructure - /webacs/api/v1/op/cliTemplateConfiguration/deployTemplateThroughJob
@@ -298,8 +297,8 @@ def pi_deploy_cli_template(device_id,template_name,variable_value):
             'targetDevices': {
                 'targetDevice': {
                     'targetDeviceID': str(device_id),
-                    'variableValues' : {
-                        'variableValue' : variable_value
+                    'variableValues': {
+                        'variableValue': variable_value
                     }
                 }
             },
@@ -311,7 +310,7 @@ def pi_deploy_cli_template(device_id,template_name,variable_value):
     response = requests.put(url, data=json.dumps(param), headers=header, verify=False, auth=PI_AUTH)
     job_json = response.json()
     job_name = job_json['mgmtResponse']['cliTemplateCommandJobResult']['jobName']
-    print ('job name: ', job_name)
+    print('job name: ', job_name)
     return job_name
 
 
@@ -330,7 +329,7 @@ def get_job_status(job_name):
     header = {'content-type': 'application/json', 'accept': 'application/json'}
     response = requests.get(url, headers=header, verify=False, auth=PI_AUTH)
     job_id_json = response.json()
-    job_id =job_id_json['queryResponse']['entityId'][0]['$']
+    job_id = job_id_json['queryResponse']['entityId'][0]['$']
 
     #  find out the job status using the job id
 
@@ -370,8 +369,8 @@ def create_asav_access_list(acl_id, interface_name, client_IP):
     :return: Response Code - 201 if successful
     """
 
-    url = ASAv_URL + '/api/access/in/' + interface_name  + '/rules/' + str(acl_id)
-    header = {'content-type': 'application/json', 'accept-type':'application/json'}
+    url = ASAv_URL + '/api/access/in/' + interface_name + '/rules/' + str(acl_id)
+    header = {'content-type': 'application/json', 'accept-type': 'application/json'}
 
     post_data = {
         'sourceAddress': {
@@ -415,6 +414,7 @@ def delete_asav_access_list(acl_id, interface_name):
     url = ASAv_URL + '/api/access/in/' + interface_name + '/rules/'+str(acl_id)
     header = {'content-type': 'application/json', 'accept-type': 'application/json'}
     response = requests.delete(url, headers=header, verify=False, auth=ASAv_AUTH)
+    return response.status_code
 
 
 def tropo_notification():
@@ -439,7 +439,7 @@ def tropo_notification():
         notification = 'successful'
     else:
         notification = 'not successful'
-    print ('Tropo notification: ', notification)
+    print('Tropo notification: ', notification)
     return notification
 
 
@@ -506,15 +506,15 @@ def main():
 
     # locate IPD in the environment using APIC-EM
 
-    client_connected = locate_client_apic_em(client_IP,EM_ticket)
+    client_connected = locate_client_apic_em(client_IP, EM_ticket)
 
     #  deploy DC router CLI template
 
     dc_device_hostname = 'PDX-RO'
     PI_dc_device_id = pi_get_device_id(dc_device_hostname)
-    print ('Head end router: ', dc_device_hostname, ', PI Device id: ',PI_dc_device_id)
+    print('Head end router: ', dc_device_hostname, ', PI Device id: ', PI_dc_device_id)
     template_name = 'GREDConfig'
-    variable_value = None  #  the template does not require any variables
+    variable_value = None    # the template does not require any variables
     PI_dc_job_name = pi_deploy_cli_template(PI_dc_device_id, template_name, variable_value)
 
     #  deploy remote router CLI template
@@ -523,20 +523,20 @@ def main():
     vlan_number = client_connected[2]
     print('Client connected to switch: ', remote_device_hostname, ' VLAN: ', vlan_number)
     PI_remote_device_id = pi_get_device_id(remote_device_hostname)
-    print ('Remote Router: ', remote_device_hostname, ', PI device Id: ', PI_remote_device_id)
+    print('Remote Router: ', remote_device_hostname, ', PI device Id: ', PI_remote_device_id)
     template_name = 'GRERConfig'
     variable_value = [
-        {'name' : 'RemoteClient', 'value' : client_IP},{'name' : 'VlanId', 'value' : str(vlan_number)}
+        {'name': 'RemoteClient', 'value': client_IP}, {'name': 'VlanId', 'value': str(vlan_number)}
     ]
-    PI_remote_job_name = pi_deploy_cli_template(PI_remote_device_id,template_name,variable_value)
+    PI_remote_job_name = pi_deploy_cli_template(PI_remote_device_id, template_name, variable_value)
 
     # check for job status
 
     time.sleep(60)  #  time delay to allow PI de deploy the jobs
     dc_job_status = get_job_status(PI_dc_job_name)
-    print ('DC CLI template deployment status: ', dc_job_status)
+    print('DC CLI template deployment status: ', dc_job_status)
     remote_job_status = get_job_status(PI_remote_job_name)
-    print ('Remote CLI template deployment status: ', remote_job_status)
+    print('Remote CLI template deployment status: ', remote_job_status)
 
     #  create ASAv outside interface ACL to allow traffic
 
@@ -555,7 +555,7 @@ def main():
     # Tropo notification - voice call
 
     voice_notification_result = tropo_notification()
-    post_spark_room_message(spark_room_id, 'Tropo Voice Notification: '+ voice_notification_result)
+    post_spark_room_message(spark_room_id, 'Tropo Voice Notification: ' + voice_notification_result)
 
     #
     # timer required to maintain the ERNA enabled, user provided
@@ -571,7 +571,7 @@ def main():
 
     dc_device_hostname = 'PDX-RO'
     PI_dc_device_id = pi_get_device_id(dc_device_hostname)
-    print ('Head end router: ', dc_device_hostname, ', PI Device id: ',PI_dc_device_id)
+    print('Head end router: ', dc_device_hostname, ', PI Device id: ', PI_dc_device_id)
     template_name = 'GREDDelete'
     variable_value = None  #  the template does not require any variables
     PI_dc_job_name = pi_deploy_cli_template(PI_dc_device_id, template_name, variable_value)
@@ -582,26 +582,26 @@ def main():
     vlan_number = client_connected[2]
     print('Client connected to switch: ', remote_device_hostname, ' VLAN: ', vlan_number)
     PI_remote_device_id = pi_get_device_id(remote_device_hostname)
-    print ('Remote Router: ', remote_device_hostname, ', PI device Id: ', PI_remote_device_id)
+    print('Remote Router: ', remote_device_hostname, ', PI device Id: ', PI_remote_device_id)
     template_name = 'GRERDelete'
     variable_value = [
-        {'name' : 'RemoteClient', 'value' : client_IP},{'name' : 'VlanId', 'value' : str(vlan_number)}
+        {'name': 'RemoteClient', 'value': client_IP}, {'name': 'VlanId', 'value': str(vlan_number)}
     ]
-    PI_remote_job_name = pi_deploy_cli_template(PI_remote_device_id,template_name,variable_value)
+    PI_remote_job_name = pi_deploy_cli_template(PI_remote_device_id, template_name, variable_value)
     time.sleep(60)  #  time delay to allow PI de deploy the jobs
     dc_job_status = get_job_status(PI_dc_job_name)
-    print ('DC router restore configurations status: ', dc_job_status)
+    print('DC router restore configurations status: ', dc_job_status)
     remote_job_status = get_job_status(PI_remote_job_name)
-    print ('Remote router restore configurations status: ', remote_job_status)
+    print('Remote router restore configurations status: ', remote_job_status)
 
     # delete ASAv line 1 ACL created to allow traffic
 
     acl_id2 = get_asav_access_list(ASAv_interface)
-    delete_status_code = delete_asav_access_list(acl_id2,ASAv_interface)
-    if (delete_status_code == None):
-        print ('ASAv access list allowing traffic from ', ASAv_REMOTE_CLIENT, ' to ', client_IP, ' deleted')
+    delete_status_code = delete_asav_access_list(acl_id2, ASAv_interface)
+    if delete_status_code is None:
+        print('ASAv access list allowing traffic from ', ASAv_REMOTE_CLIENT, ' to ', client_IP, ' deleted')
     else:
-        print ('Error deleting the ASAv access list allowing traffic from ', ASAv_REMOTE_CLIENT, ' to ', client_IP)
+        print('Error deleting the ASAv access list allowing traffic from ', ASAv_REMOTE_CLIENT, ' to ', client_IP)
 
 
 if __name__ == '__main__':

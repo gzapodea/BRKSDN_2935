@@ -6,8 +6,8 @@
 import requests
 import json
 import time
+import datetime
 import requests.packages.urllib3
-import base64
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from requests.auth import HTTPBasicAuth  # for Basic Auth
 
@@ -260,6 +260,25 @@ def get_hostname_id(device_id, ticket):
     hostname = hostname_json['response']['hostname']
     devicetype = hostname_json['response']['type']
     return hostname, devicetype
+
+
+def update_cli_template(vlan_id,remote_client,file):
+    """
+    This function will update an existing CLI template with the values to be used for deployment
+    :param vlan_id: VLAN ID of the remote client
+    :param remote_client: IP address for the remote client
+    :param file: file that contains the CLI template
+    :return: will save the file with the template to be deployed, with the name: upd_+{file}
+    """
+    file_in = open(file, 'r')
+    file_out = open('upd_'+file, 'w')
+    for line in file_in:
+        line = line.replace('$VlanId',vlan_id)
+        line = line.replace('$RemoteClient',remote_client)
+        file_out.write(line)
+        print(line)
+    file_in.close()
+    file_out.close()
 
 
 def pi_get_device_id(device_name):
